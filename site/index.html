@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Asti Anti-Cheat</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="cur-dot"  id="curDot"></div>
+<div class="cur-ring" id="curRing"></div>
+
+<nav>
+  <span class="nav-logo">Asti AC</span>
+  <div class="nav-center">
+    <a href="#" class="active" onclick="showPage('home',this);return false;">Главная</a>
+    <a href="#" onclick="showPage('rooms',this);return false;">Комнаты</a>
+  </div>
+  <span class="nav-right">v1.0</span>
+</nav>
+
+<!-- HOME -->
+<div id="home" class="page active">
+  <section class="hero">
+    <div class="hero-left animate-in">
+      <p class="hero-eyebrow">✦ Система защиты · CS2 · 2025</p>
+      <h1 class="hero-title">Asti<br><em>Anti</em><br>Cheat</h1>
+      <div>
+        <p class="hero-meta-label">О системе</p>
+        <p class="hero-meta-value">Профессиональная система защиты для CS2. Реальное время. Нулевая терпимость к читам.</p>
+      </div>
+    </div>
+    <div class="hero-right animate-in">
+      <div class="hero-num">01</div>
+      <div class="hero-right-bottom">
+        <h2 class="hero-right-title">Защита в реальном времени</h2>
+        <p class="hero-right-sub">Сканирование каждые 30 секунд. Мгновенное обнаружение. Автоматические отчёты.</p>
+        <a href="#" class="btn btn-dark"
+           onclick="showPage('rooms',document.querySelector('.nav-center a:last-child'));return false;">
+          Войти в комнату
+          <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M2 10L10 2M10 2H4M10 2v6"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <div class="marquee-wrap">
+    <div class="marquee-inner">
+      <span>Asti Anti-Cheat</span><span class="sep"> / </span>
+      <span>Защита CS2</span><span class="sep"> / </span>
+      <span>Реальное время</span><span class="sep"> / </span>
+      <span>Система комнат</span><span class="sep"> / </span>
+      <span>Точная аналитика</span><span class="sep"> / </span>
+      <span>Asti Anti-Cheat</span><span class="sep"> / </span>
+      <span>Защита CS2</span><span class="sep"> / </span>
+      <span>Реальное время</span><span class="sep"> / </span>
+      <span>Система комнат</span><span class="sep"> / </span>
+      <span>Точная аналитика</span><span class="sep"> / </span>
+    </div>
+  </div>
+
+  <section class="section reveal">
+    <p class="section-eyebrow">О системе</p>
+    <h2 class="section-title">Защита нового<br>поколения для CS2</h2>
+    <div class="features-wrap">
+      <div class="features-row">
+        <div class="feat reveal reveal-delay-1">
+          <div class="feat-num">01</div>
+          <h3 class="feat-title">Сканирование процессов</h3>
+          <p class="feat-desc">Проверка всех запущенных процессов и DLL-инъекций каждые 30 секунд без нагрузки на систему.</p>
+        </div>
+        <div class="feat reveal reveal-delay-2">
+          <div class="feat-num">02</div>
+          <h3 class="feat-title">Идентификация по Steam</h3>
+          <p class="feat-desc">Привязка к Steam ID. Обход бана через смену аккаунта невозможен.</p>
+        </div>
+        <div class="feat reveal reveal-delay-3">
+          <div class="feat-num">03</div>
+          <h3 class="feat-title">Система комнат</h3>
+          <p class="feat-desc">Открытые и закрытые комнаты. Видишь ник, Steam ID и статус каждого участника.</p>
+        </div>
+      </div>
+      <div class="features-row">
+        <div class="feat reveal reveal-delay-1">
+          <div class="feat-num">04</div>
+          <h3 class="feat-title">Статус в реальном времени</h3>
+          <p class="feat-desc">Чист / Обнаружен софт. Подключён / Проблемы с подключением. Обновляется каждые 5 секунд.</p>
+        </div>
+        <div class="feat reveal reveal-delay-2">
+          <div class="feat-num">05</div>
+          <h3 class="feat-title">Минимальная нагрузка</h3>
+          <p class="feat-desc">Менее 1% CPU и 50MB RAM. Работает в трее — не мешает игре.</p>
+        </div>
+        <div class="feat reveal reveal-delay-3">
+          <div class="feat-num">06</div>
+          <h3 class="feat-title">User-mode защита</h3>
+          <p class="feat-desc">Архитектура как у Faceit AC: сканирование процессов, модулей, паттернов памяти.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section-dark reveal">
+    <p class="section-eyebrow">Цифры</p>
+    <h2 class="section-title">Данные говорят<br>сами за себя</h2>
+    <div class="stats-row" id="statsRow"></div>
+  </section>
+
+  <section class="trust-section reveal">
+    <p class="trust-eyebrow">✦ Нам доверяют организации</p>
+    <div class="trust-grid" id="trustGrid"></div>
+  </section>
+
+  <footer>
+    <div class="footer-logo">Asti Anti-Cheat</div>
+    <div class="footer-copy">© 2025 · Все права защищены</div>
+  </footer>
+</div>
+
+<!-- ROOMS -->
+<div id="rooms" class="page">
+  <div class="rooms-header">
+    <div class="rooms-header-left animate-in">
+      <p class="section-eyebrow">Доступ · Комнаты</p>
+      <h1 class="rooms-big-title">Комнаты<br><em>доступа</em></h1>
+    </div>
+    <div class="rooms-header-right animate-in">
+      <p class="rooms-desc">Выбери комнату. Открытые — сразу показывают участников. Закрытые — требуют пароль.</p>
+      <p class="rooms-count" id="roomsCount">—</p>
+    </div>
+  </div>
+  <div class="rooms-body">
+    <div class="rooms-grid" id="roomsGrid"></div>
+  </div>
+  <footer>
+    <div class="footer-logo">Asti Anti-Cheat</div>
+    <div class="footer-copy">© 2025 · Все права защищены</div>
+  </footer>
+</div>
+
+<!-- MODAL -->
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <button class="modal-x" onclick="closeModal()">✕</button>
+    <p class="modal-eyebrow" id="mEyebrow">Комната</p>
+    <h2 class="modal-title" id="mTitle">—</h2>
+    <div id="mPassWrap">
+      <p class="modal-label">Пароль</p>
+      <input class="modal-input" type="password"
+             placeholder="Введите пароль доступа" id="mInput"
+             autocomplete="off" spellcheck="false">
+      <button class="modal-submit" id="mSubmit" onclick="checkPass()">Войти →</button>
+      <p class="modal-err-msg" id="mErrMsg">Неверный пароль. Обратитесь к администратору.</p>
+    </div>
+    <div id="mMembers"></div>
+  </div>
+</div>
+
+<script src="data.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
