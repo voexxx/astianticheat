@@ -17,8 +17,7 @@ namespace Reporter {
         if (!hSession) return false;
 
         HINTERNET hConnect = WinHttpConnect(hSession,
-            L"localhost",
-            5000, 0);
+            L"astianticheat.onrender.com", INTERNET_DEFAULT_HTTPS_PORT, 0);
         if (!hConnect) {
             WinHttpCloseHandle(hSession);
             return false;
@@ -28,7 +27,8 @@ namespace Reporter {
             L"POST",
             std::wstring(path.begin(), path.end()).c_str(),
             NULL, WINHTTP_NO_REFERER,
-            WINHTTP_DEFAULT_ACCEPT_TYPES, 0);
+            WINHTTP_DEFAULT_ACCEPT_TYPES,
+            WINHTTP_FLAG_SECURE);
         if (!hRequest) {
             WinHttpCloseHandle(hConnect);
             WinHttpCloseHandle(hSession);

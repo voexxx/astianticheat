@@ -34,39 +34,46 @@ def hash_password(plain: str) -> str:
 
 ROOMS = {
     "OPEN": {
-        "name":        "OPEN",
-        "desc":        "Открытая комната · Без пароля",
-        "open":        True,
+        "name":          "OPEN",
+        "desc":          "Открытая комната · Без пароля",
+        "open":          True,
         "password_hash": None,
-        "max_slots":   10,
+        "max_slots":     10,
     },
-    "ALPHA": {
-        "name":        "ALPHA",
-        "desc":        "Основная комната",
-        "open":        False,
-        "password_hash": hash_password("alpha123"),
-        "max_slots":   20,
+    "VOEX": {
+        "name":          "VOEX",
+        "desc":          "for Voex NEws",
+        "open":          False,
+        "password_hash": "2618be5da8aefa55ea5834d506110cf6fab41a09236ffaa6798f8a1a83125a9c",
+        "max_slots":     20,
     },
-    "BRAVO": {
-        "name":        "BRAVO",
-        "desc":        "Турнирная комната",
-        "open":        False,
-        "password_hash": hash_password("bravo456"),
-        "max_slots":   20,
+    "-": {
+        "name":          "-",
+        "desc":          "-",
+        "open":          False,
+        "password_hash": "8ee7121d5e401d852cd3342af65511daa9e49932c6f011d79c1b81408e976442",
+        "max_slots":     20,
     },
-    "CHARLIE": {
-        "name":        "CHARLIE",
-        "desc":        "Тренировочная",
-        "open":        False,
-        "password_hash": hash_password("charlie789"),
-        "max_slots":   20,
+    "-": {
+        "name":          "-",
+        "desc":          "-",
+        "open":          False,
+        "password_hash": "22ad18a03fd26627225366c2337f1c93693c89fc89b62b8dff3d393e9761d139",
+        "max_slots":     20,
     },
-    "DELTA": {
-        "name":        "DELTA",
-        "desc":        "VIP доступ",
-        "open":        False,
-        "password_hash": hash_password("delta000"),
-        "max_slots":   10,
+    "-": {
+        "name":          "-",
+        "desc":          "-",
+        "open":          False,
+        "password_hash": "0d3d6a039df440e724228eba80ac3fdb072ca90655554ddabb01b344da8bfe3d",
+        "max_slots":     10,
+    },
+    "-": {
+        "name":          "-",
+        "desc":          "-"
+        "open":          False,
+        "password_hash": "865a534662a8882c1475bcc27a71646777fef9ed82c8cf9e0462349f186ca7d1",
+        "max_slots":     10,
     },
 }
 
