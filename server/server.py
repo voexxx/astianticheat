@@ -70,7 +70,7 @@ ROOMS = {
     },
     "-": {
         "name":          "-",
-        "desc":          "-"
+        "desc":          "-",
         "open":          False,
         "password_hash": "865a534662a8882c1475bcc27a71646777fef9ed82c8cf9e0462349f186ca7d1",
         "max_slots":     10,
