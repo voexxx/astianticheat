@@ -44,24 +44,24 @@ ROOMS = {
         "name":          "VOEX",
         "desc":          "for Voex News",
         "open":          False,
-        "password_hash": "2618be5da8aefa55ea5834d506110cf6fab41a09236ffaa6798f8a1a83125a9c",
+        "password_hash": "5577be854b641c335cc244f3f2a80a9736f5f6f09812fea0282a688e3e4566a9",
         "max_slots":     20,
     },
-    "-": {
+    "Alipa Tournaments": {
         "name":          "-",
         "desc":          "-",
         "open":          False,
         "password_hash": "8ee7121d5e401d852cd3342af65511daa9e49932c6f011d79c1b81408e976442",
         "max_slots":     20,
     },
-    "-": {
+    "Ventus Axi": {
         "name":          "-",
         "desc":          "-",
         "open":          False,
         "password_hash": "22ad18a03fd26627225366c2337f1c93693c89fc89b62b8dff3d393e9761d139",
         "max_slots":     20,
     },
-    "-": {
+    "Jouliop org": {
         "name":          "-",
         "desc":          "-",
         "open":          False,
@@ -73,7 +73,7 @@ ROOMS = {
         "desc":          "-",
         "open":          False,
         "password_hash": "865a534662a8882c1475bcc27a71646777fef9ed82c8cf9e0462349f186ca7d1",
-        "max_slots":     10,
+        "max_slots":     20,
     },
 }
 
