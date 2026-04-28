@@ -202,11 +202,11 @@ void LoadRoomsFromServer() {
         // Дефолтные комнаты если сервер недоступен
         ROOMS = {
             { L"OPEN",    L"Open room - No password", true,  0, 10 },
-            { L"ALPHA",   L"Main room",               false, 0, 20 },
-            { L"BRAVO",   L"Tournament room",         false, 0, 20 },
-            { L"CHARLIE", L"Training room",           false, 0, 20 },
-            { L"DELTA",   L"VIP access",              false, 0, 10 },
-            { L"ECHO",    L"Closed league",           false, 0, 10 },
+            { L"VOEX",   L"VIP access",  false, 0, 20 },
+            { L"Alipa Tournaments",   L"VIP access", false, 0, 20 },
+            { L"Ventus Axi", L"VIP access",  false, 0, 20 },
+            { L"Jouliop org",   L"VIP access", false, 0, 10 },
+            { L"-",    L"VIP access",  false, 0, 10 },
         };
         PostMessage(hWnd, WM_ROOMS_LOADED, 0, 0);
         return;
