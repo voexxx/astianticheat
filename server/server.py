@@ -42,7 +42,7 @@ ROOMS = {
     },
     "VOEX": {
         "name":          "VOEX",
-        "desc":          "for Voex NEws",
+        "desc":          "for Voex News",
         "open":          False,
         "password_hash": "2618be5da8aefa55ea5834d506110cf6fab41a09236ffaa6798f8a1a83125a9c",
         "max_slots":     20,
