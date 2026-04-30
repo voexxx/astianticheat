@@ -12,15 +12,14 @@
 
 #pragma comment(lib, "winhttp.lib")
 
-#define IDI_TRAY    1001
-#define IDM_SHOW    1002
-#define IDM_EXIT    1003
-#define WM_TRAY     (WM_USER + 1)
+#define IDI_TRAY        1001
+#define IDM_SHOW        1002
+#define IDM_EXIT        1003
+#define WM_TRAY         (WM_USER + 1)
 #define WM_ROOMS_LOADED (WM_USER + 2)
-#define AUTORUN_KEY L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run"
-#define APP_NAME    L"AstiAnticheat"
+#define AUTORUN_KEY     L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run"
+#define APP_NAME        L"AstiAnticheat"
 
-// White theme
 #define CLR_BG     RGB(255,255,255)
 #define CLR_CARD   RGB(245,246,248)
 #define CLR_BORDER RGB(220,221,226)
@@ -41,9 +40,9 @@ struct Room {
     int  maxSlots;
 };
 
-std::vector<Room> ROOMS; // загружается с сервера
+std::vector<Room> ROOMS;
 
-HWND hWnd, hStatus, hBtn, hLog;
+HWND hWnd, hStatus, hBtn, hLog, hTimer;
 HWND hRoomList, hRoomDesc, hPassLabel, hPassInput, hJoinBtn, hRoomStatus;
 NOTIFYICONDATAW nid = {};
 HICON  hIcon;
@@ -53,6 +52,7 @@ bool isRunning = false;
 bool isVisible = true;
 bool inRoom = false;
 int  selectedRoom = -1;
+DWORD gStartTime = 0;
 std::thread bgThread;
 std::wstring gCurrentRoom = L"OPEN";
 
@@ -110,10 +110,9 @@ void AddLog(const std::wstring& msg) {
     SendMessage(hLog, LB_SETTOPINDEX, n - 1, 0);
 }
 
-// ── HTTP GET (для загрузки комнат) ──
+// ── HTTP GET ──
 std::string HttpGet(const std::wstring& path) {
     std::string result;
-
     HINTERNET hSession = WinHttpOpen(L"AstiAnticheat/1.0",
         WINHTTP_ACCESS_TYPE_DEFAULT_PROXY,
         WINHTTP_NO_PROXY_NAME, WINHTTP_NO_PROXY_BYPASS, 0);
@@ -124,8 +123,8 @@ std::string HttpGet(const std::wstring& path) {
         INTERNET_DEFAULT_HTTPS_PORT, 0);
     if (!hConnect) { WinHttpCloseHandle(hSession); return result; }
 
-    HINTERNET hRequest = WinHttpOpenRequest(hConnect,
-        L"GET", path.c_str(), NULL, WINHTTP_NO_REFERER,
+    HINTERNET hRequest = WinHttpOpenRequest(hConnect, L"GET",
+        path.c_str(), NULL, WINHTTP_NO_REFERER,
         WINHTTP_DEFAULT_ACCEPT_TYPES, WINHTTP_FLAG_SECURE);
     if (!hRequest) {
         WinHttpCloseHandle(hConnect);
@@ -153,35 +152,32 @@ std::string HttpGet(const std::wstring& path) {
     return result;
 }
 
-// ── ПРОСТОЙ JSON ПАРСЕР ──
-// Ищет значение поля в JSON строке
+// ── JSON HELPERS ──
 std::string JsonGetString(const std::string& json, const std::string& key) {
     std::string search = "\"" + key + "\":\"";
     size_t pos = json.find(search);
     if (pos == std::string::npos) return "";
     pos += search.size();
     size_t end = json.find("\"", pos);
-    if (end == std::string::npos) return "";
-    return json.substr(pos, end - pos);
+    return end == std::string::npos ? "" : json.substr(pos, end - pos);
 }
 
 bool JsonGetBool(const std::string& json, const std::string& key) {
     std::string search = "\"" + key + "\":";
     size_t pos = json.find(search);
     if (pos == std::string::npos) return false;
-    pos += search.size();
-    return json.substr(pos, 4) == "true";
+    return json.substr(pos + search.size(), 4) == "true";
 }
 
 int JsonGetInt(const std::string& json, const std::string& key) {
     std::string search = "\"" + key + "\":";
     size_t pos = json.find(search);
     if (pos == std::string::npos) return 0;
-    pos += search.size();
-    return std::stoi(json.substr(pos, 10));
+    try { return std::stoi(json.substr(pos + search.size(), 10)); }
+    catch (...) { return 0; }
 }
 
-// ── ОБНОВИТЬ СПИСОК КОМНАТ В UI ──
+// ── REFRESH ROOM LIST ──
 void RefreshRoomList() {
     SendMessage(hRoomList, LB_RESETCONTENT, 0, 0);
     for (const auto& r : ROOMS) {
@@ -192,27 +188,25 @@ void RefreshRoomList() {
     }
 }
 
-// ── ЗАГРУЗИТЬ КОМНАТЫ С СЕРВЕРА ──
+// ── LOAD ROOMS FROM SERVER ──
 void LoadRoomsFromServer() {
     AddLog(L"  Loading rooms...");
     std::string json = HttpGet(L"/api/rooms");
 
     if (json.empty()) {
         AddLog(L"  Server unavailable - using defaults");
-        // Дефолтные комнаты если сервер недоступен
         ROOMS = {
-            { L"OPEN",    L"Open room - No password", true,  0, 10 },
-            { L"VOEX",   L"VIP access",  false, 0, 20 },
-            { L"Alipa Tournaments",   L"VIP access", false, 0, 20 },
-            { L"Ventus Axi", L"VIP access",  false, 0, 20 },
-            { L"Jouliop org",   L"VIP access", false, 0, 10 },
-            { L"-",    L"VIP access",  false, 0, 10 },
+            { L"OPEN",              L"Open room - No password", true,  0, 10 },
+            { L"VOEX",              L"for Voex News",           false, 0, 20 },
+            { L"Ventus Axi",        L"-",                       false, 0, 20 },
+            { L"Alipa Tournaments", L"-",                       false, 0, 20 },
+            { L"Jouliop org",       L"-",                       false, 0, 20 },
+            { L"-",                 L"-",                       false, 0, 20 },
         };
         PostMessage(hWnd, WM_ROOMS_LOADED, 0, 0);
         return;
     }
 
-    // Парсим массив JSON объектов
     ROOMS.clear();
     size_t pos = 0;
     while ((pos = json.find("{", pos)) != std::string::npos) {
@@ -240,7 +234,11 @@ void LoadRoomsFromServer() {
 // ── BACKGROUND SCAN ──
 void BackgroundWork() {
     Fingerprint::PlayerInfo player = Fingerprint::Collect();
-    Reporter::SendLaunchReport(player);
+
+    // Конвертируем комнату в string
+    std::string roomStr(gCurrentRoom.begin(), gCurrentRoom.end());
+
+    Reporter::SendLaunchReport(player, roomStr);
 
     gNick = std::wstring(player.username.begin(), player.username.end());
     gId = std::wstring(player.steamId.begin(), player.steamId.end());
@@ -250,18 +248,21 @@ void BackgroundWork() {
     UpdateTrayTip((L"Asti AC - " + gNick).c_str());
 
     while (isRunning) {
+        // Обновляем roomStr если комната изменилась
+        roomStr = std::string(gCurrentRoom.begin(), gCurrentRoom.end());
+
         Scanner::ScanResult scan = Scanner::FullScan();
         if (scan.cheatsFound) {
             AddLog(L"  [!] CHEAT DETECTED");
             for (auto& p : scan.foundProcesses)
                 AddLog(L"      -> " + std::wstring(p.begin(), p.end()));
-            Reporter::SendScanReport(player, scan);
+            Reporter::SendScanReport(player, scan, roomStr);
             UpdateTrayTip(L"Asti AC - [!] CHEAT DETECTED");
         }
         else {
             AddLog(L"  [OK] Clean");
         }
-        Reporter::SendHeartbeat(player.hwid);
+        Reporter::SendHeartbeat(player.hwid, roomStr);
         std::this_thread::sleep_for(
             std::chrono::milliseconds(Config::SCAN_INTERVAL_MS));
     }
@@ -269,6 +270,7 @@ void BackgroundWork() {
 
 void StartAC() {
     isRunning = true;
+    gStartTime = GetTickCount();
     SetWindowTextW(hBtn, L"Stop");
     AddLog(L"  Started - Room: " + gCurrentRoom);
     InvalidateRect(hWnd, NULL, TRUE);
@@ -278,7 +280,9 @@ void StartAC() {
 
 void StopAC() {
     isRunning = false;
+    gStartTime = 0;
     SetWindowTextW(hBtn, L"Start");
+    SetWindowTextW(hTimer, L"Online: 0 min");
     AddLog(L"  Stopped");
     UpdateTrayTip(L"Asti Anti-Cheat");
     InvalidateRect(hWnd, NULL, TRUE);
@@ -339,7 +343,6 @@ void LeaveRoom() {
     InvalidateRect(hWnd, NULL, TRUE);
 }
 
-// ── DRAW LINE ──
 void Line(HDC dc, int x1, int y1, int x2, int y2) {
     HPEN p = CreatePen(PS_SOLID, 1, CLR_BORDER);
     SelectObject(dc, p);
@@ -367,10 +370,9 @@ LRESULT CALLBACK WndProc(HWND h, UINT msg, WPARAM wp, LPARAM lp) {
         SendMessage(hAuto, WM_SETFONT, (WPARAM)fSmall, TRUE);
         if (IsAutorunEnabled()) SendMessage(hAuto, BM_SETCHECK, BST_CHECKED, 0);
 
-        HWND hSt = CreateWindowW(L"STATIC", L"Steam: --     Room: --",
+        hStatus = CreateWindowW(L"STATIC", L"Steam: --     Room: --",
             WS_CHILD | WS_VISIBLE, 20, 50, 430, 18, h, NULL, NULL, NULL);
-        SendMessage(hSt, WM_SETFONT, (WPARAM)fSmall, TRUE);
-        hStatus = hSt;
+        SendMessage(hStatus, WM_SETFONT, (WPARAM)fSmall, TRUE);
 
         HWND hL1 = CreateWindowW(L"STATIC", L"ROOM",
             WS_CHILD | WS_VISIBLE, 20, 78, 60, 14, h, NULL, NULL, NULL);
@@ -410,8 +412,14 @@ LRESULT CALLBACK WndProc(HWND h, UINT msg, WPARAM wp, LPARAM lp) {
 
         hBtn = CreateWindowW(L"BUTTON", L"Start",
             WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-            20, 300, 160, 36, h, (HMENU)1, NULL, NULL);
+            20, 300, 140, 36, h, (HMENU)1, NULL, NULL);
         SendMessage(hBtn, WM_SETFONT, (WPARAM)fBtn, TRUE);
+
+        // Таймер онлайн
+        hTimer = CreateWindowW(L"STATIC", L"Online: 0 min",
+            WS_CHILD | WS_VISIBLE | SS_LEFT,
+            170, 310, 280, 18, h, NULL, NULL, NULL);
+        SendMessage(hTimer, WM_SETFONT, (WPARAM)fSmall, TRUE);
 
         hLog = CreateWindowW(L"LISTBOX", NULL,
             WS_CHILD | WS_VISIBLE | WS_VSCROLL | LBS_NOSEL | WS_BORDER,
@@ -422,6 +430,9 @@ LRESULT CALLBACK WndProc(HWND h, UINT msg, WPARAM wp, LPARAM lp) {
             WS_CHILD | WS_VISIBLE | SS_RIGHT, 0, 545, 458, 16, h, NULL, NULL, NULL);
         SendMessage(hV, WM_SETFONT, (WPARAM)fSmall, TRUE);
 
+        // Таймер обновления каждые 60 секунд
+        SetTimer(h, 1, 60000, NULL);
+
         // Загружаем комнаты в фоне
         std::thread(LoadRoomsFromServer).detach();
         break;
@@ -430,6 +441,15 @@ LRESULT CALLBACK WndProc(HWND h, UINT msg, WPARAM wp, LPARAM lp) {
     case WM_ROOMS_LOADED:
         RefreshRoomList();
         break;
+
+    case WM_TIMER: {
+        if (wp == 1 && isRunning && gStartTime > 0) {
+            DWORD elapsed = (GetTickCount() - gStartTime) / 60000;
+            SetWindowTextW(hTimer,
+                (L"Online: " + std::to_wstring(elapsed) + L" min").c_str());
+        }
+        break;
+    }
 
     case WM_COMMAND: {
         int id = LOWORD(wp);
@@ -445,7 +465,8 @@ LRESULT CALLBACK WndProc(HWND h, UINT msg, WPARAM wp, LPARAM lp) {
             if (selectedRoom >= 0 && selectedRoom < (int)ROOMS.size()) {
                 const Room& r = ROOMS[selectedRoom];
                 std::wstring slots = std::to_wstring(r.online) + L"/" + std::to_wstring(r.maxSlots);
-                SetWindowTextW(hRoomDesc, (r.name + L"\n" + r.desc + L"\n" + slots + L" online").c_str());
+                SetWindowTextW(hRoomDesc,
+                    (r.name + L"\n" + r.desc + L"\n" + slots + L" online").c_str());
                 ShowWindow(hPassLabel, r.isOpen ? SW_HIDE : SW_SHOW);
                 ShowWindow(hPassInput, r.isOpen ? SW_HIDE : SW_SHOW);
             }
@@ -490,7 +511,7 @@ LRESULT CALLBACK WndProc(HWND h, UINT msg, WPARAM wp, LPARAM lp) {
         SetBkMode(dc, TRANSPARENT);
         if (hw == hRoomStatus)
             SetTextColor(dc, inRoom ? CLR_GREEN : CLR_RED);
-        else if (hw == hStatus)
+        else if (hw == hStatus || hw == hTimer)
             SetTextColor(dc, CLR_MUTED);
         else
             SetTextColor(dc, CLR_TEXT);
@@ -528,6 +549,7 @@ LRESULT CALLBACK WndProc(HWND h, UINT msg, WPARAM wp, LPARAM lp) {
     }
     case WM_DESTROY:
         isRunning = false;
+        KillTimer(h, 1);
         RemoveTrayIcon();
         PostQuitMessage(0);
         break;
